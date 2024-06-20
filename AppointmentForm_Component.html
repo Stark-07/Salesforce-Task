@@ -1,0 +1,28 @@
+<template> 
+    <lightning-card title="New Appointment" icon-name="standard:event">
+        <div class="slds-p-around_medium">
+            <lightning-input label="Subject" data-id="subject" value={subject} onchange={handleInputChange} required></lightning-input>
+            
+    <c-test_-demo icon-name="Search slot"
+                         label="Appointment Time"
+                         onlookupupdate={Appointmenttime}
+                         ></c-test_-demo>
+
+                         <c-date_-demo icon-name="Search slot"
+                         label="Appointment Date"
+                         onlookupupdate={AppointmentDate}
+                         ></c-date_-demo>
+
+                         <c-dy-demo icon-name="Contact"
+                         label="Contact"
+                         onlookupupdate={Contact}
+                         ></c-dy-demo>
+            <!--lightning-combobox label="Appointment Time" data-id="appointmentTime" value={appointmentTime} options={timeOptions} onchange={handleInputChange} required></lightning-combobox-->
+            <lightning-textarea label="Description" data-id="description" value={description} onchange={handleInputChange} required></lightning-textarea>
+            <lightning-button variant="brand" label="Save" onclick={handleSave}></lightning-button> 
+        
+  
+  
+</div>
+    </lightning-card>
+</template>
