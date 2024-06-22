@@ -1,0 +1,46 @@
+trigger CaseRoundRobinTrigger on Case (before insert) {
+    if (Trigger.isBefore && Trigger.isInsert) {
+        // Get all active Case Routing records ordered by 'Order'
+        List<Case_Routing__c> caseRoutings = [
+            SELECT Id, User__c, Active__c, Order__c 
+            FROM Case_Routing__c 
+            WHERE Active__c = TRUE 
+            ORDER BY Order__c ASC
+        ];
+
+        if (caseRoutings.isEmpty()) {
+            return; // No active users available for assignment
+        }
+
+        // Get the last assigned order from custom settings or a custom object
+        Integer lastAssignedOrder = 0;
+        List<Last_Assigned__c> lastAssignedList = [SELECT Last_Assigned_Order__c FROM Last_Assigned__c LIMIT 1];
+        if (!lastAssignedList.isEmpty()) {
+            lastAssignedOrder = lastAssignedList[0].Last_Assigned_Order__c.intValue();
+        }
+
+        // Maintain an index to rotate through users
+        Integer currentIndex = math.mod(lastAssignedOrder,caseRoutings.size());
+
+        for (Case newCase : Trigger.new) {
+            // Assign the case to the next user in the round-robin rotation
+            newCase.OwnerId = caseRoutings[currentIndex].User__c;
+            
+            // Update the currentIndex for the next case
+            currentIndex++;
+            if (currentIndex >= caseRoutings.size()) {
+                currentIndex = 0; // Reset index to start from the first user
+            }
+        }
+
+        // Save the last assigned order
+        if (lastAssignedList.isEmpty()) {
+            Last_Assigned__c newLastAssigned = new Last_Assigned__c(Last_Assigned_Order__c = currentIndex);
+            insert newLastAssigned;
+        } else {
+            Last_Assigned__c lastAssigned = lastAssignedList[0];
+            lastAssigned.Last_Assigned_Order__c = currentIndex;
+            update lastAssigned;
+        }
+    }
+}
